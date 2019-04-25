@@ -1,0 +1,9 @@
+HELLO_C=hello_c
+$(HELLO_C)_CSRCS=hello.c
+$(HELLO_C)_CXXSRCS=
+$(HELLO_C)_OBJS=$(addsuffix .o,$($(HELLO_C)_CSRCS) $($(HELLO_C)_CXXSRCS))
+$(HELLO_C)_DEPS=$(addsuffix .d,$($(HELLO_C)_CSRCS) $($(HELLO_C)_CXXSRCS))
+$(HELLO_C)_CFLAGS=$(CFLAGS)
+$(HELLO_C)_CXXFLAGS=$(CXXFLAGS)
+$(HELLO_C)_LDFLAGS=$(LDFLAGS)
+#$(HELLO_C)_LDFLAGS=$(LDFLAGS) -lgcc -lc --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -o hello /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../lib64/Scrt1.o /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../lib64/crti.o /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crtbeginS.o -L/usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0 -L/usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../x86_64-pc-linux-gnu/lib -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crtendS.o /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../lib64/crtn.o
