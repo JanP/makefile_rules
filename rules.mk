@@ -48,6 +48,8 @@ clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
 
 clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
 
+clean: clean_hello_c
+
 clean:
 	@echo "CLEAN"
 	$(Q)rm -rf *.d *.Td *.o $(APPS) $(ARCHIVES) $(LIBS)
