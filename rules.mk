@@ -44,6 +44,10 @@ $1.o: $1 $1.d
 	@mv $1.Td $1.d && touch $1.o
 endef
 
-clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(ARCHIVE))) $(foreach LIB,$(LIBS),$(addprefix clean_,$(LIB)))
+clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
+
+clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
+
+clean:
 	@echo "CLEAN"
 	$(Q)rm -rf *.d *.Td *.o $(APPS) $(ARCHIVES) $(LIBS)
