@@ -48,7 +48,7 @@ clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
 
 clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
 
-clean: clean_hello_c clean_hello_cpp clean_hello_a_c clean_hello_a_cpp
+clean: clean_hello_c clean_hello_cpp clean_hello_a_c clean_hello_a_cpp clean_hello_so_c
 
 clean:
 	@echo "CLEAN"
