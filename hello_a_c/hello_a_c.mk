@@ -1,5 +1,5 @@
-HELLO_A_C=hello_a_c
-$(HELLO_A_C)_CSRCS=hello_main_a.c
+HELLO_A_C=hello_a_c/hello_a_c
+$(HELLO_A_C)_CSRCS=hello_a_c/src/hello_main_a.c
 $(HELLO_A_C)_CXXSRCS=
 $(HELLO_A_C)_OBJS=$(addsuffix .o,$($(HELLO_A_C)_CSRCS) $($(HELLO_A_C)_CXXSRCS))
 $(HELLO_A_C)_DEPS=$(addsuffix .d,$($(HELLO_A_C)_CSRCS) $($(HELLO_A_C)_CXXSRCS))
@@ -8,3 +8,7 @@ $(HELLO_A_C)_CXXFLAGS=$(CXXFLAGS)
 $(HELLO_A_C)_LDFLAGS=$(LDFLAGS) hello_a/hello.a
 
 $(HELLO_A_C): hello_a/hello.a
+
+clean_$(notdir $(HELLO_A_C)):
+	@echo "CLEAN $(HELLO_A_C)"
+	$(Q)rm -f $($(HELLO_A_C)_OBJS) $($(HELLO_A_C)_DEPS)
