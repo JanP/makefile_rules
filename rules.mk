@@ -3,8 +3,14 @@ ifeq ($(V),1)
 Q=
 endif
 
+CC=gcc
+CFLAGS=-Wall -Wextra -std=c11
 
-include defaults.mk
+CXX=g++
+CXXFLAGS=-Wall -Wextra -Weffc++ -std=c++17
+
+LD=gcc
+LDFLAGS=
 
 include $(foreach APP,$(APPS),$(APP).mk)
 include $(foreach ARCHIVE,$(ARCHIVES),$(ARCHIVE).mk)
