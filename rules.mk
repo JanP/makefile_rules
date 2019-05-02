@@ -4,6 +4,12 @@ Q=
 endif
 
 
+include defaults.mk
+
+include $(foreach APP,$(APPS),$(APP).mk)
+include $(foreach ARCHIVE,$(ARCHIVES),$(ARCHIVE).mk)
+include $(foreach LIB,$(LIBS),$(LIB).mk)
+
 define app_rule
 $1: $($1_OBJS)
 	@echo "LD: $1"
