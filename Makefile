@@ -13,10 +13,3 @@ include $(foreach LIB,$(LIBS),$(LIB).mk)
 all: $(APPS) $(ARCHIVES) $(LIBS)
 
 include rules.mk
-
-%.d: ;
-PRECIOUS: %.d
-
--include $(foreach APP,$(APPS),$($(APP)_DEPS))
--include $(foreach ARCHIVE,$(ARCHIVES),$($(ARCHIVE)_DEPS))
--include $(foreach LIB,$(LIBS),$($(LIB)_DEPS))
