@@ -4,6 +4,7 @@
 # Each app, lib and archive has their own set of definitions and
 # dependencies on what to build and how to build them based on the compiler
 # flags.
+# See LICENSE for usage terms.
 #
 
 # By default, make all the builds silent
@@ -98,6 +99,7 @@ ifneq ($(APPS),)
 $(foreach APP,$(APPS),$(eval $(call app_rule,$(APP))))
 $(foreach APP,$(APPS),$(foreach SRC,$($(APP)_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(APP)))))
 $(foreach APP,$(APPS),$(foreach SRC,$($(APP)_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(APP)))))
+# Include dependencies for each application object file
 -include $(foreach APP,$(APPS),$($(APP)_DEPS))
 clean: $(foreach APP,$(APPS),$(addprefix clean_,$(notdir $(APP))))
 
@@ -110,6 +112,7 @@ ifneq ($(ARCHIVES),)
 $(foreach ARCHIVE,$(ARCHIVES),$(eval $(call archive_rule,$(ARCHIVE))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(ARCHIVE)_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(ARCHIVE)))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(ARCHIVE)_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(ARCHIVE)))))
+# Include dependencies for each archive object file
 -include $(foreach ARCHIVE,$(ARCHIVES),$($(ARCHIVE)_DEPS))
 clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
 
@@ -122,6 +125,7 @@ ifneq ($(LIBS),)
 $(foreach LIB,$(LIBS),$(eval $(call shared_object_rule,$(LIB))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(LIB)_CSRCS),$(eval $(call c_lib_obj_rule,$(SRC),$(LIB)))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(LIB)_CXXSRCS),$(eval $(call cxx_lib_obj_rule,$(SRC),$(LIB)))))
+# Include dependencies for each library object file
 -include $(foreach LIB,$(LIBS),$($(LIB)_DEPS))
 clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
 
