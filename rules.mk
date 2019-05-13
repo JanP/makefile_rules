@@ -13,13 +13,15 @@ ifeq ($(V),1)
 Q=
 endif
 
+WARNINGS:=-Wall -Wextra -Wstrict-prototypes -Wparentheses
+
 # Default values for the C compiler and C compiler flags
 CC=gcc
-CFLAGS=-Wall -Wextra -std=c11
+CFLAGS=$(WARNINGS) -std=c11
 
 # Default values for the C++ compiler and the C++ compiler flags
 CXX=g++
-CXXFLAGS=-Wall -Wextra -Weffc++ -std=c++17
+CXXFLAGS=$(WARNINGS) -Weffc++ -std=c++17
 
 # Default value for the linker and the linker flags
 LD=gcc
