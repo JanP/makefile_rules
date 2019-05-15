@@ -13,11 +13,11 @@ ifeq ($(V),1)
 Q=
 endif
 
-WARNINGS:=-Wall -Wextra -Wstrict-prototypes -Wparentheses
+WARNINGS:=-Wall -Wextra -Wparentheses
 
 # Default values for the C compiler and C compiler flags
 CC=gcc
-CFLAGS=$(WARNINGS) -std=c11
+CFLAGS=$(WARNINGS) -Wstrict-prototypes -std=c11
 
 # Default values for the C++ compiler and the C++ compiler flags
 CXX=g++
