@@ -8,5 +8,5 @@ $(HELLO_CPP)_CXXFLAGS=$(CXXFLAGS)
 $(HELLO_CPP)_LDFLAGS=$(LDFLAGS) -lstdc++
 
 clean_$(notdir $(HELLO_CPP)):
-	@echo "CLEAN $(HELLO_CPP)"
+	$(call pprintf,"CLEAN",$(HELLO_CPP))
 	$(Q)rm -f $($(HELLO_CPP)_OBJS) $($(HELLO_CPP)_DEPS)

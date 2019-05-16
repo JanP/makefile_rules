@@ -10,5 +10,5 @@ $(HELLO_A_C)_LDFLAGS=$(LDFLAGS) hello_a/hello.a
 hello_a_c/$(HELLO_A_C): hello_a/hello.a
 
 clean_$(notdir $(HELLO_A_C)):
-	@echo "CLEAN $(HELLO_A_C)"
+	$(call pprintf,"CLEAN",$(HELLO_A_C))
 	$(Q)rm -f $($(HELLO_A_C)_OBJS) $($(HELLO_A_C)_DEPS)

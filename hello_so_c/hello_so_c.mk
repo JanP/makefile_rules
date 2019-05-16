@@ -10,5 +10,5 @@ $(HELLO_SO_C)_LDFLAGS=$(LDFLAGS) -L./hello_so -lhello -lstdc++ -Wl,-rpath=./hell
 hello_so_c/$(HELLO_SO_C): hello_so/libhello.so
 
 clean_$(notdir $(HELLO_SO_C)):
-	@echo "CLEAN $(HELLO_SO_C)"
+	$(call pprintf,"CLEAN",$(HELLO_SO_C))
 	$(Q)rm -f $($(HELLO_SO_C)_OBJS) $($(HELLO_SO_C)_DEPS)

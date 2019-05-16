@@ -10,5 +10,5 @@ $(HELLO_A_CPP)_LDFLAGS=$(LDFLAGS) hello_a/hello.a -lstdc++
 hello_a_cpp/$(HELLO_A_CPP): hello_a/hello.a
 
 clean_$(notdir $(HELLO_A_CPP)):
-	@echo "CLEAN $(HELLO_A_CPP)"
+	$(call pprintf,"CLEAN",$(HELLO_A_CPP))
 	$(Q)rm -f $($(HELLO_A_CPP)_OBJS) $($(HELLO_A_CPP)_DEPS)

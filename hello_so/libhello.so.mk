@@ -8,5 +8,5 @@ $(HELLO_SO)_CXXFLAGS=$(CXXFLAGS)
 $(HELLO_SO)_LDFLAGS=$(LDFLAGS)
 
 clean_$(notdir $(HELLO_SO)):
-	@echo "CLEAN $(HELLO_SO)"
+	$(call pprintf,"CLEAN",$(HELLO_SO))
 	$(Q)rm -f $($(HELLO_SO)_OBJS) $($(HELLO_SO)_DEPS)
