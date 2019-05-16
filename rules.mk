@@ -95,7 +95,7 @@ $1.$2.o: $1 $1.$2.d
 endef
 
 clean:
-	@echo "CLEAN"
+	@printf "%20s\n" "CLEAN"
 	$(Q)rm -rf *.d *.Td *.o $(APPS) $(ARCHIVES) $(LIBS)
 
 # If there are any applications defined in the top-level Makefile, evaluate all
