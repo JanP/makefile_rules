@@ -33,24 +33,28 @@ include $(foreach APP,$(APPS),$(APP).mk)
 include $(foreach ARCHIVE,$(ARCHIVES),$(ARCHIVE).mk)
 include $(foreach LIB,$(LIBS),$(LIB).mk)
 
+define pprintf
+@printf "%20s: %s\n" "$1" "$2"
+endef
+
 # Function to generate a specific rule for building each application
 define app_rule
 $1: $($(notdir $1)_OBJS)
-	@echo "LD: $1"
+	$(call pprintf,"LD",$1)
 	$(Q)$(LD) -o $1 $($(notdir $1)_OBJS) $($(notdir $1)_LDFLAGS)
 endef
 
 # Function to generate a specific rule for creating each archive
 define archive_rule
 $1: $($(notdir $1)_OBJS)
-	@echo "ARCHIVE: $1"
-	$(Q)$(AR) -ru $1 $($(notdir $1)_OBJS)
+	$(call pprintf,"ARCHIVE",$1)
+	$(Q)$(AR) -cr $1 $($(notdir $1)_OBJS)
 endef
 
 # Function to generate a specific rule for creating each shared object
 define shared_object_rule
 $1: $($(notdir $1)_OBJS)
-	@echo "SHARED OBJECT: $1"
+	$(call pprintf,"LIB",$1)
 	$(Q)$(LD) -shared -o $1 $($(notdir $1)_OBJS) $($(notdir $1)_LDFLAGS)
 endef
 
@@ -58,7 +62,7 @@ endef
 # dependencies for regenerating said object file based on the C source
 define c_obj_rule
 $1.$2.o: $1 $1.$2.d
-	@echo "C: $1"
+	$(call pprintf,"C",$1)
 	$(Q)$(CC) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.Td $($2_CFLAGS)
 	@mv $1.$2.Td $1.$2.d && touch $1.$2.o
 endef
@@ -67,7 +71,7 @@ endef
 # dependencies for regenerating said object file based on the C++ source
 define cxx_obj_rule
 $1.$2.o: $1 $1.$2.d
-	@echo "C++: $1"
+	$(call pprintf,"C++",$1)
 	$(Q)$(CXX) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.Td $($2_CXXFLAGS)
 	@mv $1.$2.Td $1.$2.d && touch $1.$2.o
 endef
@@ -76,7 +80,7 @@ endef
 # -fPIC compiler flag
 define c_lib_obj_rule
 $1.$2.o: $1 $1.$2.d
-	@echo "C: $1"
+	$(call pprintf,"C",$1)
 	$(Q)$(CC) -c -fPIC -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.Td $($2_CFLAGS)
 	@mv $1.$2.Td $1.$2.d && touch $1.$2.o
 endef
@@ -85,7 +89,7 @@ endef
 # -fPIC compiler flag
 define cxx_lib_obj_rule
 $1.$2.o: $1 $1.$2.d
-	@echo "C++: $1"
+	$(call pprintf,"C++",$1)
 	$(Q)$(CXX) -c -fPIC -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.Td $($2_CXXFLAGS)
 	@mv $1.$2.Td $1.$2.d && touch $1.$2.o
 endef
