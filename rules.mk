@@ -16,15 +16,30 @@ endif
 WARNINGS:=-Wall -Wextra -Wparentheses
 
 # Default values for the C compiler and C compiler flags
+ifeq ($(CC),clang)
+CC=clang
+else
 CC=gcc
+endif
+
 CFLAGS=$(WARNINGS) -Wstrict-prototypes -std=c11
 
 # Default values for the C++ compiler and the C++ compiler flags
+ifeq ($(CC),clang)
+CXX=clang++
+else
 CXX=g++
+endif
+
 CXXFLAGS=$(WARNINGS) -Weffc++ -std=c++17
 
 # Default value for the linker and the linker flags
+ifeq ($(CC),clang)
+LD=clang
+else
 LD=gcc
+endif
+
 LDFLAGS=
 
 # Include each set of definitions and dependencies for APPS,
