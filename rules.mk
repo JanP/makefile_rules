@@ -29,51 +29,35 @@ endef
 
 # Helper function to use the specified C compiler if defined,
 # else use the default one.
-define cc
-$(if $($(notdir $1)_CC),$($(notdir $1)_CC),$(CC))
-endef
+cc = $(if $($(notdir $1)_CC),$($(notdir $1)_CC),$(CC))
 
 # Helper function to use the specified C compiler flags if defined,
 # else use the default one.
-define cflags
-$(if $($(notdir $1)_CFLAGS),$($(notdir $1)_CFLAGS),$(CFLAGS))
-endef
+cflags = $(if $($(notdir $1)_CFLAGS),$($(notdir $1)_CFLAGS),$(CFLAGS))
 
 # Helper function to use the specified C++ compiler if defined,
 # else use the default one.
-define cxx
-$(if $($(notdir $1)_CXX),$($(notdir $1)_CXX),$(CXX))
-endef
+cxx = $(if $($(notdir $1)_CXX),$($(notdir $1)_CXX),$(CXX))
 
 # Helper function to use the specified C++ compiler flags if defined,
 # else use the default one.
-define cxxflags
-$(if $($(notdir $1)_CXXFLAGS),$($(notdir $1)_CXXFLAGS),$(CXXFLAGS))
-endef
+cxxflags = $(if $($(notdir $1)_CXXFLAGS),$($(notdir $1)_CXXFLAGS),$(CXXFLAGS))
 
 # Helper function to use the specified linker if defined,
 # else use the default one.
-define ld
-$(if $($(notdir $1)_LD),$($(notdir $1)_LD),$(LD))
-endef
+ld = $(if $($(notdir $1)_LD),$($(notdir $1)_LD),$(LD))
 
 # Helper function to use the specified linker flags if defined,
 # else use the default one.
-define ldflags
-$(if $($(notdir $1)_LDFLAGS),$($(notdir $1)_LDFLAGS),$(LDFLAGS))
-endef
+ldflags = $(if $($(notdir $1)_LDFLAGS),$($(notdir $1)_LDFLAGS),$(LDFLAGS))
 
 # Helper function to use the specified archiver if defined,
 # else use the default one.
-define ar
-$(if $($(notdir $1)_AR),$($(notdir $1)_AR),$(AR))
-endef
+ar = $(if $($(notdir $1)_AR),$($(notdir $1)_AR),$(AR))
 
 # Helper function to use the specified archiver flags if defined,
 # else use the default one.
-define arflags
-$(if $($(notdir $1)_ARFLAGS),$($(notdir $1)_ARFLAGS),$(ARFLAGS))
-endef
+arflags = $(if $($(notdir $1)_ARFLAGS),$($(notdir $1)_ARFLAGS),$(ARFLAGS))
 
 # Function to generate a specific rule for building each application
 define link_rule
@@ -148,6 +132,6 @@ clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
 
 endif
 
-# The dpendency files are generated as a byproduct of the compilation of the
+# The dependency files are generated as a byproduct of the compilation of the
 # source files. Preserve them once compilation is finished.
 PRECIOUS: %.d
