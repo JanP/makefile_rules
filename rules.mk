@@ -97,6 +97,10 @@ clean:
 # required functions for each of these applications and add each clean
 # target to the global CLEAN target as a dependency
 ifneq ($(APPS),)
+
+$(foreach APP,$(notdir $(APPS)),$(eval $(APP)_OBJS=$(addsuffix .$(APP).o,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
+$(foreach APP,$(notdir $(APPS)),$(eval $(APP)_DEPS=$(addsuffix .$(APP).d,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
+
 $(foreach APP,$(APPS),$(eval $(call link_rule,$(APP),)))
 $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(APP)),))))
 $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(APP)),))))
@@ -110,6 +114,10 @@ endif
 # required functions for each of these archives and add each clean target
 # to the global CLEAN target as a dependency
 ifneq ($(ARCHIVES),)
+
+$(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_OBJS=$(addsuffix .$(ARCHIVE).o,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
+$(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_DEPS=$(addsuffix .$(ARCHIVE).d,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
+
 $(foreach ARCHIVE,$(ARCHIVES),$(eval $(call archive_rule,$(ARCHIVE))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(ARCHIVE)),))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(ARCHIVE)),))))
@@ -123,6 +131,10 @@ endif
 # evaluate all required functions for each of these libraries and add each clean
 # target to the global CLEAN target as a dependency
 ifneq ($(LIBS),)
+
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
+
 $(foreach LIB,$(LIBS),$(eval $(call link_rule,$(LIB),$(SO_LDFLAGS))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(LIB)),$(SO_CFLAGS)))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(LIB)),$(SO_CXXFLAGS)))))
