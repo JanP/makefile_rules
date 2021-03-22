@@ -5,12 +5,35 @@
 # dependencies on what to build and how to build them based on the compiler
 # flags.
 # See LICENSE for usage terms.
-#
+
+# makefile_rules installation directory
+MAKEFILE_RULES_DIR:=$(dir $(filter %rules.mk,$(MAKEFILE_LIST)))
 
 # By default, make all the builds silent
 Q=@
 ifeq ($(V),1)
 Q=
+endif
+
+WARNINGS:=-Wall -Wextra -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wshadow
+
+CFLAGS+=$(WARNINGS) -Wstrict-prototypes -Wjump-misses-init -Wformat=2 -std=c17
+CXXFLAGS+=$(WARNINGS) -Wold-style-cast -Wuseless-cast -std=c++17
+
+ifeq (1,$(SANITIZE))
+CFLAGS+=-ggdb -fno-omit-frame-pointer
+CFLAGS+=-fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=pointer-compare -fsanitize=pointer-subtract
+
+CXXFLAGS+=-ggdb -fno-omit-frame-pointer
+CXXFLAGS+=-fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=pointer-compare -fsanitize=pointer-subtrace
+
+LDFLAGS+=-fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=pointer-compare -fsanitize=pointer-subtract
+endif
+
+ifeq (1,$(COVERAGE))
+CFLAGS+=--coverage
+CXXFLAGS+=--coverage
+LDFLAGS+=--coverage
 endif
 
 SO_CFLAGS=-fPIC
