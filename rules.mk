@@ -52,51 +52,35 @@ endef
 
 # Helper function to use the specified C compiler if defined,
 # else use the default one.
-define cc
-$(if $($(notdir $1)_CC),$($(notdir $1)_CC),$(CC))
-endef
+cc = $(if $($(notdir $1)_CC),$($(notdir $1)_CC),$(CC))
 
 # Helper function to use the specified C compiler flags if defined,
 # else use the default one.
-define cflags
-$(if $($(notdir $1)_CFLAGS),$($(notdir $1)_CFLAGS),$(CFLAGS))
-endef
+cflags = $(if $($(notdir $1)_CFLAGS),$($(notdir $1)_CFLAGS),$(CFLAGS))
 
 # Helper function to use the specified C++ compiler if defined,
 # else use the default one.
-define cxx
-$(if $($(notdir $1)_CXX),$($(notdir $1)_CXX),$(CXX))
-endef
+cxx = $(if $($(notdir $1)_CXX),$($(notdir $1)_CXX),$(CXX))
 
 # Helper function to use the specified C++ compiler flags if defined,
 # else use the default one.
-define cxxflags
-$(if $($(notdir $1)_CXXFLAGS),$($(notdir $1)_CXXFLAGS),$(CXXFLAGS))
-endef
+cxxflags = $(if $($(notdir $1)_CXXFLAGS),$($(notdir $1)_CXXFLAGS),$(CXXFLAGS))
 
 # Helper function to use the specified linker if defined,
 # else use the default one.
-define ld
-$(if $($(notdir $1)_LD),$($(notdir $1)_LD),$(LD))
-endef
+ld = $(if $($(notdir $1)_LD),$($(notdir $1)_LD),$(LD))
 
 # Helper function to use the specified linker flags if defined,
 # else use the default one.
-define ldflags
-$(if $($(notdir $1)_LDFLAGS),$($(notdir $1)_LDFLAGS),$(LDFLAGS))
-endef
+ldflags = $(if $($(notdir $1)_LDFLAGS),$($(notdir $1)_LDFLAGS),$(LDFLAGS))
 
 # Helper function to use the specified archiver if defined,
 # else use the default one.
-define ar
-$(if $($(notdir $1)_AR),$($(notdir $1)_AR),$(AR))
-endef
+ar = $(if $($(notdir $1)_AR),$($(notdir $1)_AR),$(AR))
 
 # Helper function to use the specified archiver flags if defined,
 # else use the default one.
-define arflags
-$(if $($(notdir $1)_ARFLAGS),$($(notdir $1)_ARFLAGS),$(ARFLAGS))
-endef
+arflags = $(if $($(notdir $1)_ARFLAGS),$($(notdir $1)_ARFLAGS),$(ARFLAGS))
 
 # Function to generate a specific rule for building each application
 define link_rule
@@ -136,6 +120,10 @@ clean:
 # required functions for each of these applications and add each clean
 # target to the global CLEAN target as a dependency
 ifneq ($(APPS),)
+
+$(foreach APP,$(notdir $(APPS)),$(eval $(APP)_OBJS=$(addsuffix .$(APP).o,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
+$(foreach APP,$(notdir $(APPS)),$(eval $(APP)_DEPS=$(addsuffix .$(APP).d,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
+
 $(foreach APP,$(APPS),$(eval $(call link_rule,$(APP),)))
 $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(APP)),))))
 $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(APP)),))))
@@ -149,6 +137,10 @@ endif
 # required functions for each of these archives and add each clean target
 # to the global CLEAN target as a dependency
 ifneq ($(ARCHIVES),)
+
+$(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_OBJS=$(addsuffix .$(ARCHIVE).o,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
+$(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_DEPS=$(addsuffix .$(ARCHIVE).d,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
+
 $(foreach ARCHIVE,$(ARCHIVES),$(eval $(call archive_rule,$(ARCHIVE))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(ARCHIVE)),))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(ARCHIVE)),))))
@@ -162,6 +154,10 @@ endif
 # evaluate all required functions for each of these libraries and add each clean
 # target to the global CLEAN target as a dependency
 ifneq ($(LIBS),)
+
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
+
 $(foreach LIB,$(LIBS),$(eval $(call link_rule,$(LIB),$(SO_LDFLAGS))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(LIB)),$(SO_CFLAGS)))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(LIB)),$(SO_CXXFLAGS)))))
@@ -171,6 +167,6 @@ clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
 
 endif
 
-# The dpendency files are generated as a byproduct of the compilation of the
+# The dependency files are generated as a byproduct of the compilation of the
 # source files. Preserve them once compilation is finished.
 PRECIOUS: %.d

@@ -26,11 +26,3 @@ default: all
 all: $(APPS) $(ARCHIVES) $(LIBS)
 
 include rules.mk
-
-
-test:
-ifeq ($(TEST),)
-	@echo "test"
-else
-	@echo "$(TEST)"
-endif
