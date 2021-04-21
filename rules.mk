@@ -112,6 +112,14 @@ $1.$2.o $1.$2.d: $1
 	$(Q)$(call cxx,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $(call cxxflags,$2) $3
 endef
 
+# Function to generate a specific rule to clean up generated objects and
+# dependencies of a build target
+define clean_rule
+clean_$1:
+	$(call pprintf,"CLEAN",$1)
+	$(Q)rm -f $($1_OBJS) $($1_DEPS)
+endef
+
 clean:
 	@printf "%20s\n" "CLEAN"
 	$(Q)rm -rf *.d *.o $(APPS) $(ARCHIVES) $(LIBS)
@@ -131,6 +139,8 @@ $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CXXSRCS),$(eval $(call cx
 include $(foreach APP,$(APPS),$($(notdir $(APP))_DEPS))
 clean: $(foreach APP,$(APPS),$(addprefix clean_,$(notdir $(APP))))
 
+$(foreach APP,$(notdir $(APPS)),$(eval $(call clean_rule,$(APP))))
+
 endif
 
 # If there are any archives defined in the top-level Makefile, evaluate all
@@ -148,6 +158,8 @@ $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CXXSRCS),$(ev
 include $(foreach ARCHIVE,$(ARCHIVES),$($(notdir $(ARCHIVE))_DEPS))
 clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
 
+$(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(call clean_rule,$(ARCHIVE))))
+
 endif
 
 # If there are any libraries (shared objects) defined in the top-level Makefile,
@@ -164,6 +176,8 @@ $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CXXSRCS),$(eval $(call cx
 # Include dependencies for each library object file
 include $(foreach LIB,$(LIBS),$($(notdir $(LIB))_DEPS))
 clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
+
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(call clean_rule,$(LIB))))
 
 endif
 
