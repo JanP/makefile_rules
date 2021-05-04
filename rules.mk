@@ -36,9 +36,7 @@ CXXFLAGS+=--coverage
 LDFLAGS+=--coverage
 endif
 
-SO_CFLAGS=-fPIC
-SO_CXXFLAGS=-fPIC
-SO_LDFLAGS=-shared
+ARFLAGS=cr
 
 # Include each set of definitions and dependencies for APPS,
 # LIBS and ARCHIVES defined in the top-level Makefile
@@ -54,46 +52,30 @@ endef
 # else use the default one.
 cc = $(if $($(notdir $1)_CC),$($(notdir $1)_CC),$(CC))
 
-# Helper function to use the specified C compiler flags if defined,
-# else use the default one.
-cflags = $(if $($(notdir $1)_CFLAGS),$($(notdir $1)_CFLAGS),$(CFLAGS))
-
 # Helper function to use the specified C++ compiler if defined,
 # else use the default one.
 cxx = $(if $($(notdir $1)_CXX),$($(notdir $1)_CXX),$(CXX))
-
-# Helper function to use the specified C++ compiler flags if defined,
-# else use the default one.
-cxxflags = $(if $($(notdir $1)_CXXFLAGS),$($(notdir $1)_CXXFLAGS),$(CXXFLAGS))
 
 # Helper function to use the specified linker if defined,
 # else use the default one.
 ld = $(if $($(notdir $1)_LD),$($(notdir $1)_LD),$(LD))
 
-# Helper function to use the specified linker flags if defined,
-# else use the default one.
-ldflags = $(if $($(notdir $1)_LDFLAGS),$($(notdir $1)_LDFLAGS),$(LDFLAGS))
-
 # Helper function to use the specified archiver if defined,
 # else use the default one.
 ar = $(if $($(notdir $1)_AR),$($(notdir $1)_AR),$(AR))
-
-# Helper function to use the specified archiver flags if defined,
-# else use the default one.
-arflags = $(if $($(notdir $1)_ARFLAGS),$($(notdir $1)_ARFLAGS),$(ARFLAGS))
 
 # Function to generate a specific rule for building each application
 define link_rule
 $1: $($(notdir $1)_OBJS)
 	$(call pprintf,"LD",$1)
-	$(Q)$(call ld,$1) -o $1 $($(notdir $1)_OBJS) $(call ldflags,$1) $2
+	$(Q)$(call ld,$1) -o $1 $($(notdir $1)_OBJS) $($(notdir $1)_LDFLAGS) $(LDFLAGS) $2
 endef
 
 # Function to generate a specific rule for creating each archive
 define archive_rule
 $1: $($(notdir $1)_OBJS)
 	$(call pprintf,"ARCHIVE",$1)
-	$(Q)$(call ar,$1) $(call arflags,$1) $1 $($(notdir $1)_OBJS)
+	$(Q)$(call ar,$1) $(ARFLAGS) $1 $($(notdir $1)_OBJS)
 endef
 
 # Function to generate a specific rule to create each object file and the
@@ -101,7 +83,7 @@ endef
 define c_obj_rule
 $1.$2.o $1.$2.d: $1
 	$(call pprintf,"C",$1)
-	$(Q)$(call cc,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $(call cflags,$2) $3
+	$(Q)$(call cc,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $($(notdir $2)_CFLAGS) $(CFLAGS) $3
 endef
 
 # Function to generate a specific rule to create each object file and the
@@ -109,7 +91,7 @@ endef
 define cxx_obj_rule
 $1.$2.o $1.$2.d: $1
 	$(call pprintf,"C++",$1)
-	$(Q)$(call cxx,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $(call cxxflags,$2) $3
+	$(Q)$(call cxx,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $($(notdir $2)_CXXFLAGS) $(CXXFLAGS) $3
 endef
 
 # Function to generate a specific rule to clean up generated objects and
@@ -170,9 +152,9 @@ ifneq ($(LIBS),)
 $(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
 $(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
 
-$(foreach LIB,$(LIBS),$(eval $(call link_rule,$(LIB),$(SO_LDFLAGS))))
-$(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(LIB)),$(SO_CFLAGS)))))
-$(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(LIB)),$(SO_CXXFLAGS)))))
+$(foreach LIB,$(LIBS),$(eval $(call link_rule,$(LIB),-shared)))
+$(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(LIB)),-fPIC))))
+$(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(LIB)),-fPIC))))
 # Include dependencies for each library object file
 include $(foreach LIB,$(LIBS),$($(notdir $(LIB))_DEPS))
 clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
