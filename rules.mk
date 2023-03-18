@@ -15,19 +15,22 @@ ifeq ($(V),1)
 Q=
 endif
 
-WARNINGS:=-Wall -Wextra -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wshadow
+include $(MAKEFILE_RULES_DIR)/flags.mk
 
-CFLAGS+=$(WARNINGS) -Wstrict-prototypes -Wjump-misses-init -Wformat=2 -std=c17
-CXXFLAGS+=$(WARNINGS) -Wold-style-cast -Wuseless-cast -std=c++17
+ifeq (1,$(RELEASE))
+CFLAGS+=$(RELEASE_CFLAGS)
+CXXFLAGS+=$(RELEASE_CXXFLAGS)
+LDFLAGS+=$(RELEASE_LDFLAGS)
+else
+CFLAGS+=$(DEBUG_CFLAGS)
+CXXFLAGS+=$(DEBUG_CXXFLAGS)
+LDFLAGS+=$(DEBUG_LDFLAGS)
+endif
 
 ifeq (1,$(SANITIZE))
-CFLAGS+=-ggdb -fno-omit-frame-pointer
-CFLAGS+=-fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=pointer-compare -fsanitize=pointer-subtract
-
-CXXFLAGS+=-ggdb -fno-omit-frame-pointer
-CXXFLAGS+=-fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=pointer-compare -fsanitize=pointer-subtrace
-
-LDFLAGS+=-fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=pointer-compare -fsanitize=pointer-subtract
+CFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtract
+CXXFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtrace
+LDFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtract -static-libasan
 endif
 
 ifeq (1,$(COVERAGE))
@@ -38,127 +41,84 @@ endif
 
 ARFLAGS=cr
 
+include $(MAKEFILE_RULES_DIR)/functions.mk
+
 # Include each set of definitions and dependencies for APPS,
 # LIBS and ARCHIVES defined in the top-level Makefile
 include $(foreach APP,$(APPS),$(APP).mk)
 include $(foreach ARCHIVE,$(ARCHIVES),$(ARCHIVE).mk)
 include $(foreach LIB,$(LIBS),$(LIB).mk)
 
-define pprintf
-@printf "%20s: %s\n" "$1" "$2"
-endef
-
-# Helper function to use the specified C compiler if defined,
-# else use the default one.
-cc = $(if $($(notdir $1)_CC),$($(notdir $1)_CC),$(CC))
-
-# Helper function to use the specified C++ compiler if defined,
-# else use the default one.
-cxx = $(if $($(notdir $1)_CXX),$($(notdir $1)_CXX),$(CXX))
-
-# Helper function to use the specified linker if defined,
-# else use the default one.
-ld = $(if $($(notdir $1)_LD),$($(notdir $1)_LD),$(LD))
-
-# Helper function to use the specified archiver if defined,
-# else use the default one.
-ar = $(if $($(notdir $1)_AR),$($(notdir $1)_AR),$(AR))
-
-# Function to generate a specific rule for building each application
-define link_rule
-$1: $($(notdir $1)_OBJS)
-	$(call pprintf,"LD",$1)
-	$(Q)$(call ld,$1) -o $1 $($(notdir $1)_OBJS) $($(notdir $1)_LDFLAGS) $(LDFLAGS) $2
-endef
-
-# Function to generate a specific rule for creating each archive
-define archive_rule
-$1: $($(notdir $1)_OBJS)
-	$(call pprintf,"ARCHIVE",$1)
-	$(Q)$(call ar,$1) $(ARFLAGS) $1 $($(notdir $1)_OBJS)
-endef
-
-# Function to generate a specific rule to create each object file and the
-# dependencies for regenerating said object file based on the C source
-define c_obj_rule
-$1.$2.o $1.$2.d: $1
-	$(call pprintf,"C",$1)
-	$(Q)$(call cc,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $($(notdir $2)_CFLAGS) $(CFLAGS) $3
-endef
-
-# Function to generate a specific rule to create each object file and the
-# dependencies for regenerating said object file based on the C++ source
-define cxx_obj_rule
-$1.$2.o $1.$2.d: $1
-	$(call pprintf,"C++",$1)
-	$(Q)$(call cxx,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $($(notdir $2)_CXXFLAGS) $(CXXFLAGS) $3
-endef
-
-# Function to generate a specific rule to clean up generated objects and
-# dependencies of a build target
-define clean_rule
-clean_$1:
-	$(call pprintf,"CLEAN",$1)
-	$(Q)rm -f $($1_OBJS) $($1_DEPS)
-endef
-
 clean:
 	@printf "%20s\n" "CLEAN"
-	$(Q)rm -rf *.d *.o $(APPS) $(ARCHIVES) $(LIBS)
+	$(Q)rm -rf $(APPS) $(ARCHIVES) $(LIBS)
 
 # If there are any applications defined in the top-level Makefile, evaluate all
 # required functions for each of these applications and add each clean
 # target to the global CLEAN target as a dependency
 ifneq ($(APPS),)
-
+# Generate variables for $(APP) objects and dependencies.
 $(foreach APP,$(notdir $(APPS)),$(eval $(APP)_OBJS=$(addsuffix .$(APP).o,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
 $(foreach APP,$(notdir $(APPS)),$(eval $(APP)_DEPS=$(addsuffix .$(APP).d,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
 
-$(foreach APP,$(APPS),$(eval $(call link_rule,$(APP),)))
+# Generate build rules
+$(foreach APP,$(APPS),$(eval $(call app_rule,$(APP))))
 $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(APP)),))))
 $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(APP)),))))
+
 # Include dependencies for each application object file
 include $(foreach APP,$(APPS),$($(notdir $(APP))_DEPS))
+
+# Make global clean depend on $(APP) specific clean
 clean: $(foreach APP,$(APPS),$(addprefix clean_,$(notdir $(APP))))
 
+# Generate $(APP) clean rule
 $(foreach APP,$(notdir $(APPS)),$(eval $(call clean_rule,$(APP))))
-
 endif
 
 # If there are any archives defined in the top-level Makefile, evaluate all
 # required functions for each of these archives and add each clean target
 # to the global CLEAN target as a dependency
 ifneq ($(ARCHIVES),)
-
+# Generate variables for $(ARCHIVE) objects and dependencies
 $(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_OBJS=$(addsuffix .$(ARCHIVE).o,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
 $(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_DEPS=$(addsuffix .$(ARCHIVE).d,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
 
+# Generate build rules
 $(foreach ARCHIVE,$(ARCHIVES),$(eval $(call archive_rule,$(ARCHIVE))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(ARCHIVE)),))))
 $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(ARCHIVE)),))))
+
 # Include dependencies for each archive object file
 include $(foreach ARCHIVE,$(ARCHIVES),$($(notdir $(ARCHIVE))_DEPS))
+
+# Make global clean depend on $(ARCHIVE) specific clean
 clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
 
+# Generate $(ARCHIVE) clean rule
 $(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(call clean_rule,$(ARCHIVE))))
-
 endif
 
 # If there are any libraries (shared objects) defined in the top-level Makefile,
 # evaluate all required functions for each of these libraries and add each clean
 # target to the global CLEAN target as a dependency
 ifneq ($(LIBS),)
-
+# Generate variables for $(LIB) objects and dependencies
 $(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
 $(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
 
-$(foreach LIB,$(LIBS),$(eval $(call link_rule,$(LIB),-shared)))
+# Generate build rules
+$(foreach LIB,$(LIBS),$(eval $(call shared_lib_rule,$(LIB))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CSRCS),$(eval $(call c_obj_rule,$(SRC),$(notdir $(LIB)),-fPIC))))
 $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CXXSRCS),$(eval $(call cxx_obj_rule,$(SRC),$(notdir $(LIB)),-fPIC))))
+
 # Include dependencies for each library object file
 include $(foreach LIB,$(LIBS),$($(notdir $(LIB))_DEPS))
+
+# Make global clean depend on $(LIB) specific clean
 clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
 
+# Generate $(LIB) clean rule
 $(foreach LIB,$(notdir $(LIBS)),$(eval $(call clean_rule,$(LIB))))
 
 endif
