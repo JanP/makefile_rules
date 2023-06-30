@@ -10,7 +10,7 @@ CFLAGS=$(WARNINGS) -Wstrict-prototypes -std=c18
 
 # Default value for the C++ compiler and C++ compiler flags
 CXX=g++
-CXXFLAGS=$(WARNINGS) -Weffc++ -std=c++17
+CXXFLAGS=$(WARNINGS) -Weffc++ -std=c++20
 
 # Default value for the linker and the linker flags
 LD=gcc
