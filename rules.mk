@@ -46,8 +46,8 @@ endif
 
 ifeq (1,$(SANITIZE))
 CFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtract
-CXXFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtrace
-LDFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtract -static-libasan
+CXXFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtract
+LDFLAGS+=-fsanitize=address,leak,undefined,pointer-compare,pointer-subtract
 endif
 
 ifeq (1,$(COVERAGE))
