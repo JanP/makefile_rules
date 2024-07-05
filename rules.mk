@@ -93,24 +93,24 @@ size = $(if $($(notdir $1)_SIZE),$($(notddir $1)_SIZE),$(SIZE))
 define app_rule
 $1: $($(notdir $1)_OBJS)
 	$(Q)$(call ld,$1) -o $1 $($(notdir $1)_OBJS) $($(notdir $1)_LDFLAGS) $(LDFLAGS)
-	@printf "%20s: %s" "LD" "$1"
-	$(Q)$(call size,$1) -t $1 | tail -n 1 | awk '{ printf " (text: %d, data: %d, bss: %d)\n", $$$$1, $$$$2, $$$$3 }'
+	@printf "%20s: %s ...\n" "LD" "$1"
+	$(Q)$(call size,$1) -t $1 | tail -n 1 | awk '{ printf "%20s: %s (text: %d, data: %d, bss: %d)\n", "LD", "$1", $$$$1, $$$$2, $$$$3 }'
 endef
 
 # Function to generate a specific rule for building a shared library
 define shared_lib_rule
 $1: $($(notdir $1)_OBJS)
 	$(Q)$(call ld,$1) -o $1 $($(notdir $1)_OBJS) $($(notdir $1)_LDFLAGS) $(LDFLAGS) -shared
-	@printf "%20s: %s" "LD" "$1"
-	$(Q)$(call size,$1) -t $1 | tail -n 1 | awk '{ printf " (text: %d, data: %d, bss: %d)\n", $$$$1, $$$$2, $$$$3 }'
+	@printf "%20s: %s ...\n" "LD" "$1"
+	$(Q)$(call size,$1) -t $1 | tail -n 1 | awk '{ printf "%20s: %s (text: %d, data: %d, bss: %d)\n", "LD", "$1", $$$$1, $$$$2, $$$$3 }'
 endef
 
 # Function to generate a specific rule for building an archive
 define archive_rule
 $1: $($(notdir $1)_OBJS)
 	$(Q)$(call ar,$1) $(ARFLAGS) $1 $($(notdir $1)_OBJS)
-	@printf "%20s: %s" "AR" "$1"
-	$(Q)$(call size,$1) -t $1 | tail -n 1 | awk '{ printf " (text: %d, data: %d, bss: %d)\n", $$$$1, $$$$2, $$$$3 }'
+	@printf "%20s: %s ...\n" "AR" "$1"
+	$(Q)$(call size,$1) -t $1 | tail -n 1 | awk '{ printf "%20s: %s (text: %d, data: %d, bss: %d)\n", "AR", "$1", $$$$1, $$$$2, $$$$3 }'
 endef
 
 # Function to generate a specific rule to create each object file and the
@@ -118,8 +118,8 @@ endef
 define c_obj_rule
 $1.$2.o $1.$2.d: $1
 	$(Q)$(call cc,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $($(notdir $2)_CFLAGS) $(CFLAGS) $3
-	@printf "%20s: %s" "C" "$1"
-	$(Q)$(call size,$2) -t $1.$2.o | tail -n 1 | awk '{ printf " (text: %d, data: %d, bss: %d)\n", $$$$1, $$$$2, $$$$3 }'
+	@printf "%20s: %s ...\n" "C" "$1"
+	$(Q)$(call size,$2) -t $1.$2.o | tail -n 1 | awk '{ printf "%20s: %s (text: %d, data: %d, bss: %d)\n", "C", "$1", $$$$1, $$$$2, $$$$3 }'
 endef
 
 # FUnction to generate a specific rule to create each object file and the
@@ -127,8 +127,8 @@ endef
 define cxx_obj_rule
 $1.$2.o $1.$2.d: $1
 	$(Q)$(call cxx,$2) -c -o $1.$2.o $1 -MT $1.$2.o -MMD -MP -MF $1.$2.d $($(notdir $2)_CXXFLAGS) $(CXXFLAGS) $3
-	@printf "%20s: %s" "C++" "$1"
-	$(Q)$(call size,$2) -t $1.$2.o | tail -n 1 | awk '{ printf " (text: %d, data: %d, bss: %d)\n", $$$$1, $$$$2, $$$$3 }'
+	@printf "%20s: %s ...\n" "C++" "$1"
+	$(Q)$(call size,$2) -t $1.$2.o | tail -n 1 | awk '{ printf "%20s: %s (text: %d, data: %d, bss: %d)\n", "C++", "$1", $$$$1, $$$$2, $$$$3 }'
 endef
 
 # Functio nto generate a specific rule to clean up generated objects and
