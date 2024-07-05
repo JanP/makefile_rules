@@ -1,28 +1,39 @@
+# Define the list of applications to build
 APPS=hello_c/hello_c hello_cpp/hello_cpp hello_a_c/hello_a_c hello_a_cpp/hello_a_cpp hello_so_c/hello_so_c hello_so_cpp/hello_so_cpp
+
+# Defines the list of archives to build
 ARCHIVES=hello_a/hello.a
+
+# Defines the list of libraries/shared objects to build
 LIBS=hello_so/libhello.so
 
-WARNINGS:=-Wall -Wextra -Wparentheses
-
-# Default value for the C compiler and C compiler flags
+# Overwrite CC to specify the C compiler to use.
 CC=gcc
-CFLAGS=$(WARNINGS) -Wstrict-prototypes -std=c18
+# Overwrite CC_STD to specify the C standard to use, defaults to C17.
+CC_STD=c18
 
-# Default value for the C++ compiler and C++ compiler flags
+# Overwrite CXX to specify the CXX compiler to use.
 CXX=g++
-CXXFLAGS=$(WARNINGS) -Weffc++ -std=c++20
+# Overwrite CXX_STD to specify the C++ standard to use, defaults to C++17.
+CXX_STD=c++20
 
-# Default value for the linker and the linker flags
+# Overwrite LD to specify the linker to use, defaults to ld.
 LD=gcc
-LDFLAGS=
 
-# Default value for the archiver and the archiver flags
+# Overwrite AR to specify the archive utility to use.
 AR=ar
-ARFLAGS=-cr
 
-# Default build target
-default: all
+# Specify to add additional CFLAGS to every target
+ADDITIONAL_CFLAGS:=
+
+# Specify to add additional CXXFLAGS to every target
+ADDITIONAL_CXXFLAGS:=
+
+# Specify to add additional LDFLAGS to every target
+ADDITIONAL_LDFLAGS:=
 
 all: $(APPS) $(ARCHIVES) $(LIBS)
+
+default: all
 
 include rules.mk

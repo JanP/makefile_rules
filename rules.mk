@@ -16,22 +16,25 @@ Q=
 endif
 
 WARNINGS:=-Wall -Wextra -Wduplicated-cond -Wduplicated-branches -Wlogical-op
-WARNINGS+=-Wnull-dereference -Wdouble-promotion -Wshadow
+WARNINGS+=-Wnull-dereference -Wdouble-promotion -Wshadow -Wparentheses
 WARNINGS+=-Wformat=2 -Wformat-overflow=2
 
-C_WARNINGS+=$(WARNINGS) -Wstrict-prototypes -Wjump-misses-init -std=c17
-CXX_WARNINGS+=$(WARNINGS) -Wold-style-cast -Wuseless-cast -std=c++17
+CC_STD?=c17
+CXX_STD?=c++17
 
-CFLAGS:=$(C_WARNINGS) -fdata-sections -ffunction-sections -fno-omit-frame-pointer $(ADDITIONAL_DEFAULT_CFLAGS)
-CXXFLAGS:=$(CXX_WARNINGS) -fdata-sections -ffunction-sections -fno-omit-frame-pointer $(ADDITIONAL_DEFAULT_CXXFLAGS)
-LDFLAGS:=$(ADDITIONAL_DEFAULT_LDFLAGS)
+C_WARNINGS+=$(WARNINGS) -Wstrict-prototypes -Wjump-misses-init -std=$(CC_STD)
+CXX_WARNINGS+=$(WARNINGS) -Wold-style-cast -Wuseless-cast -std=$(CXX_STD)
 
-DEBUG_CFLAGS+=-g3 -Og
-DEBUG_CXXFLAGS+=-g3 -Og
+CFLAGS:=$(C_WARNINGS) -fdata-sections -ffunction-sections $(ADDITIONAL_CFLAGS)
+CXXFLAGS:=$(CXX_WARNINGS) -fdata-sections -ffunction-sections $(ADDITIONAL_CXXFLAGS)
+LDFLAGS:=$(ADDITIONAL_LDFLAGS)
+
+DEBUG_CFLAGS+=-fno-omit-frame-pointer -g3 -Og
+DEBUG_CXXFLAGS+=-fno-omit-frame-pointer -g3 -Og
 DEBUG_LDFLAGS+=
 
-RELEASE_CFLAGS+=-Os -flto -ffat-lto-objects
-RELEASE_CXXFLAGS+=-Os -flto -ffat-lto-objects
+RELEASE_CFLAGS+=-fomit-frame-pointer -O3 -flto -ffat-lto-objects
+RELEASE_CXXFLAGS+=-fomit-frame-pointer -O3 -flto -ffat-lto-objects
 RELEASE_LDFLAGS+=-flto -ffat-lto-objects
 
 ifeq (1,$(RELEASE))
@@ -136,7 +139,7 @@ endef
 define clean_rule
 clean_$1:
 	@printf "%20s: %s\n" "CLEAN" "$1"
-	$(Q)rm -f $($1_OBJS) $($1_DEPS)
+	$(Q)rm -f $($1_OBJS) $($1_DEPS) $($1_COVERAGE)
 endef
 
 # Include each set of definitions and dependencies for APPS,
@@ -156,6 +159,8 @@ ifneq ($(APPS),)
 # Generate variables for $(APP) objects and dependencies.
 $(foreach APP,$(notdir $(APPS)),$(eval $(APP)_OBJS=$(addsuffix .$(APP).o,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
 $(foreach APP,$(notdir $(APPS)),$(eval $(APP)_DEPS=$(addsuffix .$(APP).d,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
+$(foreach APP,$(notdir $(APPS)),$(eval $(APP)_COVERAGE=$(addsuffix .$(APP).gcda,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
+$(foreach APP,$(notdir $(APPS)),$(eval $(APP)_COVERAGE+=$(addsuffix .$(APP).gcno,$($(APP)_CSRCS) $($(APP)_CXXSRCS))))
 
 # Generate build rules
 $(foreach APP,$(APPS),$(eval $(call app_rule,$(APP))))
@@ -165,8 +170,11 @@ $(foreach APP,$(APPS),$(foreach SRC,$($(notdir $(APP))_CXXSRCS),$(eval $(call cx
 # Include dependencies for each application object file
 include $(foreach APP,$(APPS),$($(notdir $(APP))_DEPS))
 
+CLEAN_APPS:=$(foreach APP,$(APPS),$(addprefix clean_,$(notdir $(APP))))
+
 # Make global clean depend on $(APP) specific clean
-clean: $(foreach APP,$(APPS),$(addprefix clean_,$(notdir $(APP))))
+.PHONY: $(CLEAN_APPS)
+clean: $(CLEAN_APPS)
 
 # Generate $(APP) clean rule
 $(foreach APP,$(notdir $(APPS)),$(eval $(call clean_rule,$(APP))))
@@ -179,6 +187,8 @@ ifneq ($(ARCHIVES),)
 # Generate variables for $(ARCHIVE) objects and dependencies
 $(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_OBJS=$(addsuffix .$(ARCHIVE).o,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
 $(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_DEPS=$(addsuffix .$(ARCHIVE).d,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
+$(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_COVERAGE=$(addsuffix .$(ARCHIVE).gcda,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
+$(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(ARCHIVE)_COVERAGE+=$(addsuffix .$(ARCHIVE).gcno,$($(ARCHIVE)_CSRCS) $($(ARCHIVE)_CXXSRCS))))
 
 # Generate build rules
 $(foreach ARCHIVE,$(ARCHIVES),$(eval $(call archive_rule,$(ARCHIVE))))
@@ -188,8 +198,11 @@ $(foreach ARCHIVE,$(ARCHIVES),$(foreach SRC,$($(notdir $(ARCHIVE))_CXXSRCS),$(ev
 # Include dependencies for each archive object file
 include $(foreach ARCHIVE,$(ARCHIVES),$($(notdir $(ARCHIVE))_DEPS))
 
+CLEAN_ARCHIVES:=$(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
+
 # Make global clean depend on $(ARCHIVE) specific clean
-clean: $(foreach ARCHIVE,$(ARCHIVES),$(addprefix clean_,$(notdir $(ARCHIVE))))
+.PHONY: $(CLEAN_ARCHIVES)
+clean: $(CLEAN_ARCHIVES)
 
 # Generate $(ARCHIVE) clean rule
 $(foreach ARCHIVE,$(notdir $(ARCHIVES)),$(eval $(call clean_rule,$(ARCHIVE))))
@@ -201,7 +214,9 @@ endif
 ifneq ($(LIBS),)
 # Generate variables for $(LIB) objects and dependencies
 $(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
-$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_OBJS=$(addsuffix .$(LIB).o,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_DEPS=$(addsuffix .$(LIB).d,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_COVERAGE=$(addsuffix .$(LIB).gcda,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
+$(foreach LIB,$(notdir $(LIBS)),$(eval $(LIB)_COVERAGE+=$(addsuffix .$(LIB).gcno,$($(LIB)_CSRCS) $($(LIB)_CXXSRCS))))
 
 # Generate build rules
 $(foreach LIB,$(LIBS),$(eval $(call shared_lib_rule,$(LIB))))
@@ -211,13 +226,18 @@ $(foreach LIB,$(LIBS),$(foreach SRC,$($(notdir $(LIB))_CXXSRCS),$(eval $(call cx
 # Include dependencies for each library object file
 include $(foreach LIB,$(LIBS),$($(notdir $(LIB))_DEPS))
 
+CLEAN_LIBS:=$(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
+
 # Make global clean depend on $(LIB) specific clean
-clean: $(foreach LIB,$(LIBS),$(addprefix clean_,$(notdir $(LIB))))
+.PHONY: $(CLEAN_LIBS)
+clean: $(CLEAN_LIBS)
 
 # Generate $(LIB) clean rule
 $(foreach LIB,$(notdir $(LIBS)),$(eval $(call clean_rule,$(LIB))))
 
 endif
+
+.PHONY: clean
 
 # The dependency files are generated as a byproduct of the compilation of the
 # source files. Preserve them once compilation is finished.
