@@ -237,7 +237,24 @@ $(foreach LIB,$(notdir $(LIBS)),$(eval $(call clean_rule,$(LIB))))
 
 endif
 
-.PHONY: clean
+# Make empty targets for cleaning and coverage report generation
+.PHONY: clean coverage
+
+# Build target for coverage report generation
+coverage: coverage/coverage.html
+
+# Actual command for the generation of the coverage report
+coverage/coverage.html:
+	mkdir -p $(dir $@)
+	gcovr --html --html-details --html-theme github.dark-blue --decisions --calls --output $@
+
+# Clean should also clean any coverage reporting
+clean: clean_coverage
+
+# Clean target for cleaning coverage reporting
+clean_coverage:
+	@printf "%20s: %s\n" "CLEAN" "coverage"
+	$(Q)rm -rf coverage
 
 # The dependency files are generated as a byproduct of the compilation of the
 # source files. Preserve them once compilation is finished.
