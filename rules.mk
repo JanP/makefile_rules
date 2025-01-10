@@ -15,6 +15,8 @@ ifeq ($(V),1)
 Q=
 endif
 
+LD=$(CC)
+
 WARNINGS:=-Wall -Wextra -Wduplicated-cond -Wduplicated-branches -Wlogical-op
 WARNINGS+=-Wnull-dereference -Wdouble-promotion -Wshadow -Wparentheses
 WARNINGS+=-Wformat=2 -Wformat-overflow=2
